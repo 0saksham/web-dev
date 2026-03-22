@@ -1,0 +1,169 @@
+.about-page {
+  width: 100%;
+}
+
+/* =================== HERO BANNER =================== */
+.about-hero {
+  position: relative;
+  height: 50vh;
+  min-height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.about-hero-bg {
+  position: absolute;
+  inset: -15%;
+  will-change: transform;
+}
+
+.about-hero-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.about-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, 
+    rgba(15, 23, 42, 0.7) 0%, 
+    rgba(99, 102, 241, 0.4) 100%
+  );
+  z-index: 1;
+}
+
+.about-hero-content {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  color: white;
+}
+
+.about-hero-content h1 {
+  font-size: 3.5rem;
+  font-weight: 900;
+  margin: 1rem 0 0.75rem;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.about-hero-content p {
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* =================== CONTENT =================== */
+.about-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 4rem 0;
+}
+
+.about-section {
+  margin-bottom: 4rem;
+  padding: 2.5rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition);
+}
+
+.about-section:hover {
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-4px);
+}
+
+.about-icon-wrap {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(14,165,233,0.1));
+  font-size: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.about-section h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.about-section > p {
+  font-size: 1.0625rem;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+/* =================== VALUES GRID =================== */
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.value-card {
+  padding: 1.5rem;
+  border-radius: var(--radius-xl);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  text-align: center;
+  transition: var(--transition);
+}
+
+.value-card:hover {
+  background: white;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+.value-icon {
+  font-size: 1.75rem;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.value-card strong {
+  display: block;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.value-card p {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* =================== RESPONSIVE =================== */
+@media (max-width: 768px) {
+  .about-hero {
+    height: 40vh;
+    min-height: 280px;
+  }
+
+  .about-hero-content h1 {
+    font-size: 2.25rem;
+  }
+
+  .about-content {
+    padding: 2.5rem 0;
+  }
+
+  .about-section {
+    padding: 1.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .values-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
