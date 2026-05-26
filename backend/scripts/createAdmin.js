@@ -18,3 +18,5 @@ bcrypt.hash(password, 10, (err, hash) => {
   console.log('\nCopy this hash to backend/models/users.js for the preCreatedAdmins array')
 })
 
+
+

@@ -27,6 +27,7 @@ const __dirname = dirname(__filename)
 
 const app = express()
 const PORT = process.env.PORT || 5000
+const HOST = process.env.HOST || '0.0.0.0'
 
 // Initialize database
 initDatabase()
@@ -1311,9 +1312,9 @@ if (process.env.NODE_ENV === 'production') {
   })
 }
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server is running on http://localhost:${PORT}`)
-  console.log(`📡 API Health Check: http://localhost:${PORT}/api/health`)
+app.listen(PORT, HOST, () => {
+  console.log(`🚀 Server is running on http://${HOST}:${PORT}`)
+  console.log(`📡 API Health Check: http://${HOST}:${PORT}/api/health`)
   
   if (process.env.NODE_ENV === 'production') {
     console.log('🔒 Production mode: Security headers enabled')

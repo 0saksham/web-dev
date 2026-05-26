@@ -47,7 +47,7 @@ function IntroAnimation({ onComplete }) {
         autoPlay
         muted
       >
-        <source src="/videos/intro.mp4" type="video/mp4" />
+        <source src="/videos/intro_compressed.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
       <button className="skip-button" onClick={handleSkip}>
