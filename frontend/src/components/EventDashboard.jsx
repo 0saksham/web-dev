@@ -18,6 +18,15 @@ const EventDashboard = ({ user }) => {
     fetchEvents()
   }, [filterStatus])
 
+  // Auto-refresh events every 30 seconds
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchEvents()
+    }, 30000) // 30 seconds
+
+    return () => clearInterval(intervalId)
+  }, [filterStatus])
+
   const fetchEvents = async () => {
     try {
       setLoading(true)
@@ -136,6 +145,9 @@ const EventDashboard = ({ user }) => {
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
+            <button className="btn btn-primary" onClick={fetchEvents} disabled={loading}>
+              {loading ? 'Refreshing...' : 'Refresh'}
+            </button>
           </div>
 
           {error && (
