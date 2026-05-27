@@ -16,7 +16,7 @@ export class Event {
       SELECT e.*,
         u.name as creator_name, u.email as creator_email,
         s.name as submitter_name, s.email as submitter_email,
-        es.remarks as latest_remarks
+        es.remarks as remarks, es.remarks as latest_remarks
       FROM events e
       LEFT JOIN users u ON e.created_by = u.id
       LEFT JOIN users s ON e.submitted_by = s.id
@@ -93,7 +93,7 @@ export class Event {
     const db = getDatabase()
     let query = `
       SELECT e.*, u.name as creator_name, u.email as creator_email,
-        s.name as submitter_name, s.email as submitter_email, es.remarks as latest_remarks
+        s.name as submitter_name, s.email as submitter_email, es.remarks as remarks, es.remarks as latest_remarks
       FROM events e
       LEFT JOIN users u ON e.created_by = u.id
       LEFT JOIN users s ON e.submitted_by = s.id
