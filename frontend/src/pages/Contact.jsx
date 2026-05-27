@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useScrollReveal, useParallax } from '../hooks/useAnimations'
 import ParticleBackground from '../components/ParticleBackground'
 import './Contact.css'
@@ -24,7 +24,7 @@ const Contact = () => {
     setStatus('sending')
     
     try {
-      const response = await fetch('/api/contact', {
+      const response = await fetch('https://iks-backend-sq2b.onrender.com/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -65,9 +65,9 @@ const Contact = () => {
         <div className="contact-content">
           <div className="contact-info">
             {[
-              { icon: '📍', title: 'Address', desc: 'Graphic Era Hill University, Dehradun, Uttarakhand' },
-              { icon: '📧', title: 'Email', desc: 'iks@gehu.ac.in' },
-              { icon: '📞', title: 'Phone', desc: '+91 135 269 8000' },
+              { icon: 'ðŸ“', title: 'Address', desc: 'Graphic Era Hill University, Dehradun, Uttarakhand' },
+              { icon: 'ðŸ“§', title: 'Email', desc: 'iks@gehu.ac.in' },
+              { icon: 'ðŸ“ž', title: 'Phone', desc: '+91 135 269 8000' },
             ].map((item, i) => (
               <div key={i} className="info-card scroll-reveal" style={{ transitionDelay: `${i * 0.1}s` }}>
                 <div className="info-icon-wrap">{item.icon}</div>
@@ -105,8 +105,8 @@ const Contact = () => {
                 <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
               </svg>
             </button>
-            {status === 'success' && <p className="form-status success">✅ Message sent successfully!</p>}
-            {status === 'error' && <p className="form-status error">❌ Failed to send message. Please try again.</p>}
+            {status === 'success' && <p className="form-status success">âœ… Message sent successfully!</p>}
+            {status === 'error' && <p className="form-status error">âŒ Failed to send message. Please try again.</p>}
           </form>
         </div>
       </div>
@@ -115,5 +115,6 @@ const Contact = () => {
 }
 
 export default Contact
+
 
 
