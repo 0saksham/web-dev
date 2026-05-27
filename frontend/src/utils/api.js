@@ -3,7 +3,7 @@
  */
 
 // In development, always use the Vite proxy via relative '/api' to avoid CORS when the dev server chooses a different port
-const API_BASE_URL = import.meta.env?.DEV ? '/api' : (import.meta.env.VITE_API_URL || '/api')
+const API_BASE_URL = import.meta.env?.DEV ? '/api' : 'https://iks-backend-sq2b.onrender.com/api'
 
 /**
  * Get authentication token from localStorage
