@@ -153,7 +153,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     // Check if email already exists
-    if (User.emailExists(email)) {
+    if (await User.emailExists(email)) {
       return res.status(409).json({
         error: 'Email already registered. Please use a different email or login.'
       })
@@ -163,7 +163,7 @@ app.post('/api/auth/register', async (req, res) => {
     const hashedPassword = await hashPassword(password)
 
     // Create user
-    const newUser = User.create({
+    const newUser = await User.create({
       email,
       password: hashedPassword,
       role,
@@ -276,9 +276,9 @@ app.post('/api/auth/login', async (req, res) => {
 /**
  * Verify token and get current user
  */
-app.get('/api/auth/me', authenticate, (req, res) => {
+app.get('/api/auth/me', authenticate, async (req, res) => {
   try {
-    const user = User.findById(req.user.id)
+    const user = await User.findById(req.user.id)
     if (!user) {
       return res.status(404).json({
         error: 'User not found'
@@ -303,9 +303,9 @@ app.get('/api/auth/me', authenticate, (req, res) => {
 /**
  * Get all events (with role-based filtering)
  */
-app.get('/api/events', authenticate, (req, res) => {
+app.get('/api/events', authenticate, async (req, res) => {
   try {
-    const user = User.findById(req.user.id)
+    const user = await User.findById(req.user.id)
     if (!user) {
       return res.status(404).json({ error: 'User not found' })
     }
@@ -325,7 +325,7 @@ app.get('/api/events', authenticate, (req, res) => {
       limit: req.query.limit ? parseInt(req.query.limit) : null
     }
 
-    const events = Event.findAll(filters)
+    const events = await Event.findAll(filters)
     res.json({
       success: true,
       events
@@ -341,9 +341,9 @@ app.get('/api/events', authenticate, (req, res) => {
 /**
  * Get event by ID
  */
-app.get('/api/events/:id', authenticate, (req, res) => {
+app.get('/api/events/:id', authenticate, async (req, res) => {
   try {
-    const event = Event.findById(req.params.id)
+    const event = await Event.findById(req.params.id)
     if (!event) {
       return res.status(404).json({
         error: 'Event not found'
@@ -351,7 +351,7 @@ app.get('/api/events/:id', authenticate, (req, res) => {
     }
 
     // Role-based access control
-    const user = User.findById(req.user.id)
+    const user = await User.findById(req.user.id)
     if (user.role === 'campus-in-charge' && event.campus !== user.campus) {
       return res.status(403).json({
         error: 'Access denied'
@@ -389,9 +389,9 @@ app.get('/api/events/:id', authenticate, (req, res) => {
  * Create new event
  * Always creates as draft - users cannot directly publish
  */
-app.post('/api/events', authenticate, (req, res) => {
+app.post('/api/events', authenticate, async (req, res) => {
   try {
-    const user = User.findById(req.user.id)
+    const user = await User.findById(req.user.id)
     if (!user) {
       return res.status(404).json({ error: 'User not found' })
     }
@@ -431,7 +431,7 @@ app.post('/api/events', authenticate, (req, res) => {
 
     let event
     try {
-      event = Event.create({
+      event = await Event.create({
         title: eventTitle,
         description,
         duration,
@@ -468,16 +468,16 @@ app.post('/api/events', authenticate, (req, res) => {
 /**
  * Submit event for approval (Draft â†’ Pending)
  */
-app.post('/api/events/:id/submit', authenticate, (req, res) => {
+app.post('/api/events/:id/submit', authenticate, async (req, res) => {
   try {
-    const event = Event.findById(req.params.id)
+    const event = await Event.findById(req.params.id)
     if (!event) {
       return res.status(404).json({
         error: 'Event not found'
       })
     }
 
-    const user = User.findById(req.user.id)
+    const user = await User.findById(req.user.id)
     
     // Only creator can submit their own event
     if (event.created_by !== user.id) {
@@ -503,7 +503,7 @@ app.post('/api/events/:id/submit', authenticate, (req, res) => {
     }
 
     // Update event to pending status
-    const updatedEvent = Event.update(req.params.id, {
+    const updatedEvent = await Event.update(req.params.id, {
       status: 'pending',
       submitted_by: user.id
     })
@@ -524,16 +524,16 @@ app.post('/api/events/:id/submit', authenticate, (req, res) => {
 /**
  * Update event status (Approve/Reject)
  */
-app.post('/api/events/:id/status', authenticate, (req, res) => {
+app.post('/api/events/:id/status', authenticate, async (req, res) => {
   try {
-    const event = Event.findById(req.params.id)
+    const event = await Event.findById(req.params.id)
     if (!event) {
       return res.status(404).json({
         error: 'Event not found'
       })
     }
 
-    const user = User.findById(req.user.id)
+    const user = await User.findById(req.user.id)
     
     // Only admin-office can approve/reject events
     if (user.role !== 'admin-office') {
@@ -564,7 +564,7 @@ app.post('/api/events/:id/status', authenticate, (req, res) => {
       })
     }
 
-    const updatedEvent = Event.update(req.params.id, {
+    const updatedEvent = await Event.update(req.params.id, {
       status,
       remarks,
       reviewed_by: user.id
@@ -586,16 +586,16 @@ app.post('/api/events/:id/status', authenticate, (req, res) => {
 /**
  * Update event
  */
-app.put('/api/events/:id', authenticate, (req, res) => {
+app.put('/api/events/:id', authenticate, async (req, res) => {
   try {
-    const event = Event.findById(req.params.id)
+    const event = await Event.findById(req.params.id)
     if (!event) {
       return res.status(404).json({
         error: 'Event not found'
       })
     }
 
-    const user = User.findById(req.user.id)
+    const user = await User.findById(req.user.id)
     
     // Only creator or admin can update
     if (event.created_by !== user.id && user.role !== 'admin-office') {
@@ -650,7 +650,7 @@ app.put('/api/events/:id', authenticate, (req, res) => {
       updates.remarks = req.body.remarks || null
     }
 
-    const updatedEvent = Event.update(req.params.id, updates)
+    const updatedEvent = await Event.update(req.params.id, updates)
 
     res.json({
       success: true,
@@ -668,16 +668,16 @@ app.put('/api/events/:id', authenticate, (req, res) => {
 /**
  * Delete event
  */
-app.delete('/api/events/:id', authenticate, (req, res) => {
+app.delete('/api/events/:id', authenticate, async (req, res) => {
   try {
-    const event = Event.findById(req.params.id)
+    const event = await Event.findById(req.params.id)
     if (!event) {
       return res.status(404).json({
         error: 'Event not found'
       })
     }
 
-    const user = User.findById(req.user.id)
+    const user = await User.findById(req.user.id)
     
     // Only creator or admin can delete
     if (event.created_by !== user.id && user.role !== 'admin-office') {
@@ -686,7 +686,7 @@ app.delete('/api/events/:id', authenticate, (req, res) => {
       })
     }
 
-    Event.delete(req.params.id)
+    await Event.delete(req.params.id)
 
     res.json({
       success: true,
@@ -705,14 +705,14 @@ app.delete('/api/events/:id', authenticate, (req, res) => {
 /**
  * Get user's notifications
  */
-app.get('/api/notifications', authenticate, (req, res) => {
+app.get('/api/notifications', authenticate, async (req, res) => {
   try {
     const filters = {
       is_read: req.query.is_read !== undefined ? req.query.is_read === 'true' : undefined,
       limit: req.query.limit ? parseInt(req.query.limit) : 50
     }
     
-    const notifications = Notification.findByUser(req.user.id, filters)
+    const notifications = await Notification.findByUser(req.user.id, filters)
     res.json({
       success: true,
       notifications
@@ -728,9 +728,9 @@ app.get('/api/notifications', authenticate, (req, res) => {
 /**
  * Get unread notification count
  */
-app.get('/api/notifications/unread-count', authenticate, (req, res) => {
+app.get('/api/notifications/unread-count', authenticate, async (req, res) => {
   try {
-    const count = Notification.getUnreadCount(req.user.id)
+    const count = await Notification.getUnreadCount(req.user.id)
     res.json({
       success: true,
       count
@@ -746,9 +746,9 @@ app.get('/api/notifications/unread-count', authenticate, (req, res) => {
 /**
  * Mark notification as read
  */
-app.post('/api/notifications/:id/read', authenticate, (req, res) => {
+app.post('/api/notifications/:id/read', authenticate, async (req, res) => {
   try {
-    const notification = Notification.findById(req.params.id)
+    const notification = await Notification.findById(req.params.id)
     if (!notification) {
       return res.status(404).json({ error: 'Notification not found' })
     }
@@ -757,7 +757,7 @@ app.post('/api/notifications/:id/read', authenticate, (req, res) => {
       return res.status(403).json({ error: 'Access denied' })
     }
     
-    Notification.markAsRead(req.params.id)
+    await Notification.markAsRead(req.params.id)
     res.json({ success: true })
   } catch (error) {
     console.error('Mark read error:', error)
@@ -768,9 +768,9 @@ app.post('/api/notifications/:id/read', authenticate, (req, res) => {
 /**
  * Mark all notifications as read
  */
-app.post('/api/notifications/read-all', authenticate, (req, res) => {
+app.post('/api/notifications/read-all', authenticate, async (req, res) => {
   try {
-    Notification.markAllAsRead(req.user.id)
+    await Notification.markAllAsRead(req.user.id)
     res.json({ success: true })
   } catch (error) {
     console.error('Mark all read error:', error)
@@ -781,12 +781,12 @@ app.post('/api/notifications/read-all', authenticate, (req, res) => {
 /**
  * Admin: List or lookup users by id or role
  */
-app.get('/api/admin/users', authenticate, authorize('admin-office'), (req, res) => {
+app.get('/api/admin/users', authenticate, authorize('admin-office'), async (req, res) => {
   try {
     const { id, role } = req.query
     
     if (id) {
-      const user = User.findById(id)
+      const user = await User.findById(id)
       if (!user) {
         return res.status(404).json({ error: 'User not found' })
       }
@@ -797,7 +797,7 @@ app.get('/api/admin/users', authenticate, authorize('admin-office'), (req, res) 
     if (role) {
       filters.role = role
     }
-    const users = User.findAll(filters)
+    const users = await User.findAll(filters)
     res.json({ users })
   } catch (error) {
     console.error('Admin users lookup error:', error)
@@ -808,9 +808,9 @@ app.get('/api/admin/users', authenticate, authorize('admin-office'), (req, res) 
 /**
  * Admin: Get single user by id
  */
-app.get('/api/admin/users/:id', authenticate, authorize('admin-office'), (req, res) => {
+app.get('/api/admin/users/:id', authenticate, authorize('admin-office'), async (req, res) => {
   try {
-    const user = User.findById(req.params.id)
+    const user = await User.findById(req.params.id)
     if (!user) {
       return res.status(404).json({ error: 'User not found' })
     }
@@ -824,7 +824,7 @@ app.get('/api/admin/users/:id', authenticate, authorize('admin-office'), (req, r
 /**
  * Upload file to event
  */
-app.post('/api/events/:id/upload', authenticate, upload.single('file'), (req, res) => {
+app.post('/api/events/:id/upload', authenticate, upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -832,14 +832,14 @@ app.post('/api/events/:id/upload', authenticate, upload.single('file'), (req, re
       })
     }
 
-    const event = Event.findById(req.params.id)
+    const event = await Event.findById(req.params.id)
     if (!event) {
       return res.status(404).json({
         error: 'Event not found'
       })
     }
 
-    const user = User.findById(req.user.id)
+    const user = await User.findById(req.user.id)
     
     // Only creator or admin can add media
     if (event.created_by !== user.id && user.role !== 'admin-office') {
@@ -887,16 +887,16 @@ app.post('/api/events/:id/upload', authenticate, upload.single('file'), (req, re
 /**
  * Add media to event (legacy endpoint for manual entry)
  */
-app.post('/api/events/:id/media', authenticate, (req, res) => {
+app.post('/api/events/:id/media', authenticate, async (req, res) => {
   try {
-    const event = Event.findById(req.params.id)
+    const event = await Event.findById(req.params.id)
     if (!event) {
       return res.status(404).json({
         error: 'Event not found'
       })
     }
 
-    const user = User.findById(req.user.id)
+    const user = await User.findById(req.user.id)
     
     // Only creator or admin can add media
     if (event.created_by !== user.id && user.role !== 'admin-office') {
@@ -967,9 +967,9 @@ app.post('/api/events/:id/media', authenticate, (req, res) => {
 /**
  * Delete media from event
  */
-app.delete('/api/events/:id/media/:mediaId', authenticate, (req, res) => {
+app.delete('/api/events/:id/media/:mediaId', authenticate, async (req, res) => {
   try {
-    const event = Event.findById(req.params.id)
+    const event = await Event.findById(req.params.id)
     if (!event) {
       return res.status(404).json({
         error: 'Event not found'
@@ -983,7 +983,7 @@ app.delete('/api/events/:id/media/:mediaId', authenticate, (req, res) => {
       })
     }
 
-    const user = User.findById(req.user.id)
+    const user = await User.findById(req.user.id)
     
     // Only creator or admin can delete media
     if (event.created_by !== user.id && user.role !== 'admin-office') {
@@ -1009,9 +1009,9 @@ app.delete('/api/events/:id/media/:mediaId', authenticate, (req, res) => {
 /**
  * Update event status (Admin only)
  */
-app.post('/api/events/:id/status', authenticate, authorize('admin-office'), (req, res) => {
+app.post('/api/events/:id/status', authenticate, authorize('admin-office'), async (req, res) => {
   try {
-    const event = Event.findById(req.params.id)
+    const event = await Event.findById(req.params.id)
     if (!event) {
       return res.status(404).json({
         error: 'Event not found'
@@ -1019,7 +1019,7 @@ app.post('/api/events/:id/status', authenticate, authorize('admin-office'), (req
     }
 
     const { status, remarks } = req.body
-    const user = User.findById(req.user.id)
+    const user = await User.findById(req.user.id)
 
     if (!status) {
       return res.status(400).json({
@@ -1047,7 +1047,7 @@ app.post('/api/events/:id/status', authenticate, authorize('admin-office'), (req
       })
     }
 
-    const updatedEvent = Event.update(req.params.id, {
+    const updatedEvent = await Event.update(req.params.id, {
       status,
       reviewed_by: user.id,
       remarks
@@ -1055,7 +1055,7 @@ app.post('/api/events/:id/status', authenticate, authorize('admin-office'), (req
 
     // Create notification for the event creator
     try {
-      const eventCreator = User.findById(updatedEvent.created_by)
+      const eventCreator = await User.findById(updatedEvent.created_by)
       if (eventCreator) {
         let notificationTitle, notificationMessage, notificationType
         
@@ -1073,7 +1073,7 @@ app.post('/api/events/:id/status', authenticate, authorize('admin-office'), (req
           notificationType = 'info'
         }
         
-        Notification.create({
+        await Notification.create({
           user_id: eventCreator.id,
           event_id: updatedEvent.id,
           title: notificationTitle,
@@ -1102,9 +1102,9 @@ app.post('/api/events/:id/status', authenticate, authorize('admin-office'), (req
 /**
  * Get user notifications
  */
-app.get('/api/notifications', authenticate, (req, res) => {
+app.get('/api/notifications', authenticate, async (req, res) => {
   try {
-    const user = User.findById(req.user.id)
+    const user = await User.findById(req.user.id)
     if (!user) {
       return res.status(404).json({ error: 'User not found' })
     }
@@ -1115,7 +1115,7 @@ app.get('/api/notifications', authenticate, (req, res) => {
       limit: req.query.limit ? parseInt(req.query.limit) : 50
     }
 
-    const notifications = Notification.findByUser(req.user.id, filters)
+    const notifications = await Notification.findByUser(req.user.id, filters)
     
     res.json({
       success: true,
@@ -1132,9 +1132,9 @@ app.get('/api/notifications', authenticate, (req, res) => {
 /**
  * Mark notification as read
  */
-app.put('/api/notifications/:id/read', authenticate, (req, res) => {
+app.put('/api/notifications/:id/read', authenticate, async (req, res) => {
   try {
-    const notification = Notification.findById(req.params.id)
+    const notification = await Notification.findById(req.params.id)
     
     if (!notification) {
       return res.status(404).json({
@@ -1149,7 +1149,7 @@ app.put('/api/notifications/:id/read', authenticate, (req, res) => {
       })
     }
 
-    const updatedNotification = Notification.markAsRead(req.params.id)
+    const updatedNotification = await Notification.markAsRead(req.params.id)
     
     res.json({
       success: true,
@@ -1166,9 +1166,9 @@ app.put('/api/notifications/:id/read', authenticate, (req, res) => {
 /**
  * Mark all notifications as read
  */
-app.put('/api/notifications/read-all', authenticate, (req, res) => {
+app.put('/api/notifications/read-all', authenticate, async (req, res) => {
   try {
-    Notification.markAllAsRead(req.user.id)
+    await Notification.markAllAsRead(req.user.id)
     
     res.json({
       success: true,
@@ -1185,9 +1185,9 @@ app.put('/api/notifications/read-all', authenticate, (req, res) => {
 /**
  * Get unread notifications count
  */
-app.get('/api/notifications/unread-count', authenticate, (req, res) => {
+app.get('/api/notifications/unread-count', authenticate, async (req, res) => {
   try {
-    const count = Notification.getUnreadCount(req.user.id)
+    const count = await Notification.getUnreadCount(req.user.id)
     
     res.json({
       success: true,
@@ -1204,7 +1204,7 @@ app.get('/api/notifications/unread-count', authenticate, (req, res) => {
 /**
  * Download media file (Secure access with role-based control)
  */
-app.get('/api/media/:mediaId/download', authenticate, (req, res) => {
+app.get('/api/media/:mediaId/download', authenticate, async (req, res) => {
   try {
     const media = EventMedia.findById(req.params.mediaId)
     if (!media) {
@@ -1214,14 +1214,14 @@ app.get('/api/media/:mediaId/download', authenticate, (req, res) => {
     }
 
     // Get the event to check access
-    const event = Event.findById(media.event_id)
+    const event = await Event.findById(media.event_id)
     if (!event) {
       return res.status(404).json({
         error: 'Associated event not found'
       })
     }
 
-    const user = User.findById(req.user.id)
+    const user = await User.findById(req.user.id)
     
     // Role-based access control
     if (user.role === 'campus-in-charge') {
