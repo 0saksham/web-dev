@@ -26,6 +26,15 @@ const AdminDashboard = ({ onEventUpdate }) => {
     fetchEvents();
   }, [filters]);
 
+  // Auto-refresh events every 30 seconds
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchEvents();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(intervalId);
+  }, [filters]);
+
   const fetchEvents = async () => {
     try {
       setLoading(true);
@@ -293,6 +302,13 @@ const AdminDashboard = ({ onEventUpdate }) => {
             onChange={(e) => handleFilterChange('dateTo', e.target.value)}
             className="filter-input"
           />
+        </div>
+
+        <div className="filter-group">
+          <label>&nbsp;</label>
+          <button className="btn btn-primary" onClick={fetchEvents} disabled={loading}>
+            {loading ? 'Refreshing...' : 'Refresh'}
+          </button>
         </div>
       </div>
 
