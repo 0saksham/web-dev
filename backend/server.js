@@ -364,10 +364,10 @@ app.get('/api/events/:id', authenticate, async (req, res) => {
     }
 
     // Get event media
-    const media = EventMedia.findByEventId(req.params.id)
+    const media = await EventMedia.findByEventId(req.params.id)
     
     // Get status history
-    const statusHistory = EventStatus.findByEventId(req.params.id)
+    const statusHistory = await EventStatus.findByEventId(req.params.id)
 
     res.json({
       success: true,
@@ -861,7 +861,7 @@ app.post('/api/events/:id/upload', authenticate, upload.single('file'), async (r
     const relativePath = getRelativePath(req.file.path)
     const fileUrl = `/uploads${relativePath.split('/uploads')[1]}`
 
-    const media = EventMedia.create({
+    const media = await EventMedia.create({
       event_id: req.params.id,
       media_type: mediaType,
       file_name: req.file.originalname,
@@ -941,7 +941,7 @@ app.post('/api/events/:id/media', authenticate, async (req, res) => {
       });
     }
 
-    const media = EventMedia.create({
+    const media = await EventMedia.create({
       event_id: req.params.id,
       media_type,
       file_name,
@@ -976,7 +976,7 @@ app.delete('/api/events/:id/media/:mediaId', authenticate, async (req, res) => {
       })
     }
 
-    const media = EventMedia.findById(req.params.mediaId)
+    const media = await EventMedia.findById(req.params.mediaId)
     if (!media || media.event_id !== req.params.id) {
       return res.status(404).json({
         error: 'Media not found'
@@ -992,7 +992,7 @@ app.delete('/api/events/:id/media/:mediaId', authenticate, async (req, res) => {
       })
     }
 
-    EventMedia.delete(req.params.mediaId)
+    await EventMedia.delete(req.params.mediaId)
 
     res.json({
       success: true,
@@ -1206,7 +1206,7 @@ app.get('/api/notifications/unread-count', authenticate, async (req, res) => {
  */
 app.get('/api/media/:mediaId/download', authenticate, async (req, res) => {
   try {
-    const media = EventMedia.findById(req.params.mediaId)
+    const media = await EventMedia.findById(req.params.mediaId)
     if (!media) {
       return res.status(404).json({
         error: 'Media file not found'
