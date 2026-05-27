@@ -1,4 +1,4 @@
-/**
+﻿/**
  * API utility functions for making authenticated requests
  */
 
@@ -63,4 +63,5 @@ export const verifyAuth = async () => {
     return null
   }
 }
+
 
