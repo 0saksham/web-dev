@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { getRole, roleLabels, roles, clearRole, canSelfRegister, saveRole } from '../utils/roleStorage'
 import {
@@ -128,7 +128,7 @@ const RegisterPage = () => {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch('https://iks-backend-sq2b.onrender.com/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -180,7 +180,7 @@ const RegisterPage = () => {
       <div className="container">
         <div className="register-container card fade-in">
           <button className="back-button" onClick={handleBack}>
-            ← Back to Login
+            â† Back to Login
           </button>
           
           <div className="register-header">
@@ -330,4 +330,5 @@ const RegisterPage = () => {
 }
 
 export default RegisterPage
+
 
