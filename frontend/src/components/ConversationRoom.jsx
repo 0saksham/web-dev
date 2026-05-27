@@ -9,7 +9,7 @@ const ConversationRoom = ({ onClose }) => {
   const [error, setError] = useState('')
   const [isAutoRefresh, setIsAutoRefresh] = useState(true)
   const [showLoginForm, setShowLoginForm] = useState(false)
-  const [loginData, setLoginData] = useState({ email: '', password: '' })
+  const [loginData, setLoginData] = useState({ email: '', password: '', role: 'spoc' })
   const [loginError, setLoginError] = useState('')
   const [loginLoading, setLoginLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -48,7 +48,7 @@ const ConversationRoom = ({ onClose }) => {
           body: JSON.stringify({
             email: loginData.email,
             password: loginData.password,
-            role: 'spoc' // Allow any authenticated user
+            role: loginData.role
           })
         }
       )
@@ -60,7 +60,7 @@ const ConversationRoom = ({ onClose }) => {
         localStorage.setItem('user', JSON.stringify(data.user))
         setUser(data.user)
         setShowLoginForm(false)
-        setLoginData({ email: '', password: '' })
+        setLoginData({ email: '', password: '', role: 'spoc' })
       } else {
         setLoginError(data.error || 'Invalid credentials')
       }
@@ -243,6 +243,21 @@ const ConversationRoom = ({ onClose }) => {
             {loginError && <div className="error-message">{loginError}</div>}
 
             <div className="form-group">
+              <label htmlFor="role">Select Your Role</label>
+              <select
+                id="role"
+                value={loginData.role}
+                onChange={(e) => setLoginData({ ...loginData, role: e.target.value })}
+                className="role-select"
+              >
+                <option value="spoc">SPOC (Single Point of Contact)</option>
+                <option value="campus-in-charge">Campus In-Charge</option>
+                <option value="admin-office">Admin Office</option>
+                <option value="iks-office">IKS Office</option>
+              </select>
+            </div>
+
+            <div className="form-group">
               <label htmlFor="email">Email or Phone</label>
               <input
                 id="email"
@@ -314,6 +329,7 @@ const ConversationRoom = ({ onClose }) => {
                   localStorage.removeItem('user')
                   setShowLoginForm(true)
                   setUser(null)
+                  setLoginData({ email: '', password: '', role: 'spoc' })
                 }} 
                 className="logout-btn" 
                 title="Logout"
