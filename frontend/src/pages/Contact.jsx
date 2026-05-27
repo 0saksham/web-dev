@@ -36,11 +36,6 @@ const Contact = () => {
   }
 
   const handleOpenConversation = () => {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      alert('Please login to access the community conversation room')
-      return
-    }
     setShowConversation(true)
   }
 
@@ -149,11 +144,10 @@ const Contact = () => {
       </div>
 
       {/* Conversation Room Modal */}
-      {showConversation && user && (
+      {showConversation && (
         <div className="conversation-modal-overlay">
           <div className="conversation-modal-container">
             <ConversationRoom
-              user={user}
               onClose={() => setShowConversation(false)}
             />
           </div>

@@ -1,14 +1,76 @@
 import { useState, useEffect, useRef } from 'react'
 import './ConversationRoom.css'
 
-const ConversationRoom = ({ user, onClose }) => {
+const ConversationRoom = ({ onClose }) => {
+  const [user, setUser] = useState(null)
   const [conversations, setConversations] = useState([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [isAutoRefresh, setIsAutoRefresh] = useState(true)
+  const [showLoginForm, setShowLoginForm] = useState(false)
+  const [loginData, setLoginData] = useState({ email: '', password: '' })
+  const [loginError, setLoginError] = useState('')
+  const [loginLoading, setLoginLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const messagesEndRef = useRef(null)
   const refreshIntervalRef = useRef(null)
+
+  // Check if user is logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    const userData = localStorage.getItem('user')
+    if (token && userData) {
+      try {
+        setUser(JSON.parse(userData))
+        setShowLoginForm(false)
+      } catch (error) {
+        console.error('Error parsing user data:', error)
+        setShowLoginForm(true)
+      }
+    } else {
+      setShowLoginForm(true)
+    }
+  }, [])
+
+  // Handle login
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    setLoginError('')
+    setLoginLoading(true)
+
+    try {
+      const response = await fetch(
+        'https://iks-backend-sq2b.onrender.com/api/auth/login',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: loginData.email,
+            password: loginData.password,
+            role: 'spoc' // Allow any authenticated user
+          })
+        }
+      )
+
+      const data = await response.json()
+
+      if (response.ok && data.token) {
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify(data.user))
+        setUser(data.user)
+        setShowLoginForm(false)
+        setLoginData({ email: '', password: '' })
+      } else {
+        setLoginError(data.error || 'Invalid credentials')
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      setLoginError('Network error. Please try again.')
+    } finally {
+      setLoginLoading(false)
+    }
+  }
 
   // Fetch conversations
   const fetchConversations = async () => {
@@ -169,92 +231,169 @@ const ConversationRoom = ({ user, onClose }) => {
 
   return (
     <div className="conversation-room">
-      <div className="conversation-header">
-        <div className="header-content">
-          <h2>Community Conversation Room</h2>
-          <p className="header-subtitle">Connect with SPOCs, Campus In-Charge, Admin & IKS Office</p>
-        </div>
-        <div className="header-controls">
-          <label className="auto-refresh-toggle">
-            <input
-              type="checkbox"
-              checked={isAutoRefresh}
-              onChange={(e) => setIsAutoRefresh(e.target.checked)}
-            />
-            Auto-refresh
-          </label>
-          <button onClick={onClose} className="close-btn" title="Close conversation">✕</button>
-        </div>
-      </div>
-
-      {error && <div className="error-message">{error}</div>}
-
-      <div className="messages-container">
-        {Object.entries(groupedMessages).length === 0 ? (
-          <div className="no-messages">
-            <p>No messages yet. Be the first to start the conversation!</p>
+      {showLoginForm ? (
+        // Login Form
+        <div className="conversation-login-container">
+          <div className="login-header">
+            <h2>Community Room</h2>
+            <p className="login-subtitle">Please login to join the conversation</p>
           </div>
-        ) : (
-          Object.entries(groupedMessages).map(([date, msgs]) => (
-            <div key={date}>
-              <div className="date-separator">{date}</div>
-              {msgs.map((conv) => (
-                <div
-                  key={conv.id}
-                  className={`message-item ${conv.user_id === user.id ? 'own-message' : ''}`}
-                >
-                  <div className="message-header">
-                    <div className="message-info">
-                      <span className="username">{conv.username}</span>
-                      <span className="designation">{conv.designation}</span>
-                      <span className="timestamp">{formatTime(conv.created_at)}</span>
-                    </div>
-                    {(conv.user_id === user.id || user.role === 'admin-office') && (
-                      <button
-                        onClick={() => handleDeleteMessage(conv.id)}
-                        className="delete-btn"
-                        title="Delete message"
-                      >
-                        🗑️
-                      </button>
-                    )}
-                  </div>
-                  <div className="message-content">{conv.message}</div>
-                </div>
-              ))}
-            </div>
-          ))
-        )}
-        <div ref={messagesEndRef} />
-      </div>
 
-      <form onSubmit={handleSendMessage} className="message-form">
-        <div className="input-wrapper">
-          <textarea
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && e.ctrlKey) {
-                handleSendMessage(e)
-              }
-            }}
-            placeholder="Type your message here... (Ctrl+Enter to send)"
-            className="message-input"
-            disabled={loading}
-            maxLength={1000}
-          />
-          <div className="input-footer">
-            <span className="char-count">{newMessage.length}/1000</span>
+          <form onSubmit={handleLogin} className="login-form">
+            {loginError && <div className="error-message">{loginError}</div>}
+
+            <div className="form-group">
+              <label htmlFor="email">Email or Phone</label>
+              <input
+                id="email"
+                type="text"
+                value={loginData.email}
+                onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                placeholder="Enter your email or phone number"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <div className="password-input-wrapper">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={loginData.password}
+                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                  placeholder="Enter your password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? '👁️' : '👁️‍🗨️'}
+                </button>
+              </div>
+            </div>
+
             <button
               type="submit"
-              className="send-btn"
-              disabled={loading || !newMessage.trim()}
+              className="login-btn"
+              disabled={loginLoading}
             >
-              {loading ? 'Sending...' : 'Send'}
+              {loginLoading ? 'Logging in...' : 'Login'}
             </button>
-          </div>
+
+            <div className="login-help">
+              <p>Need to register? Contact your Campus In-Charge or SPOC</p>
+            </div>
+          </form>
+
+          <button onClick={onClose} className="close-btn-login" title="Close">✕</button>
         </div>
-      </form>
+      ) : (
+        // Conversation Room (authenticated user)
+        <>
+          <div className="conversation-header">
+            <div className="header-content">
+              <h2>Community Conversation Room</h2>
+              <p className="header-subtitle">Connect with SPOCs, Campus In-Charge, Admin & IKS Office</p>
+            </div>
+            <div className="header-controls">
+              <label className="auto-refresh-toggle">
+                <input
+                  type="checkbox"
+                  checked={isAutoRefresh}
+                  onChange={(e) => setIsAutoRefresh(e.target.checked)}
+                />
+                Auto-refresh
+              </label>
+              <button 
+                onClick={() => {
+                  localStorage.removeItem('token')
+                  localStorage.removeItem('user')
+                  setShowLoginForm(true)
+                  setUser(null)
+                }} 
+                className="logout-btn" 
+                title="Logout"
+              >
+                Logout
+              </button>
+              <button onClick={onClose} className="close-btn" title="Close conversation">✕</button>
+            </div>
+          </div>
+
+          {error && <div className="error-message">{error}</div>}
+
+          <div className="messages-container">
+            {Object.entries(groupedMessages).length === 0 ? (
+              <div className="no-messages">
+                <p>No messages yet. Be the first to start the conversation!</p>
+              </div>
+            ) : (
+              Object.entries(groupedMessages).map(([date, msgs]) => (
+                <div key={date}>
+                  <div className="date-separator">{date}</div>
+                  {msgs.map((conv) => (
+                    <div
+                      key={conv.id}
+                      className={`message-item ${conv.user_id === user.id ? 'own-message' : ''}`}
+                    >
+                      <div className="message-header">
+                        <div className="message-info">
+                          <span className="username">{conv.username}</span>
+                          <span className="designation">{conv.designation}</span>
+                          <span className="timestamp">{formatTime(conv.created_at)}</span>
+                        </div>
+                        {(conv.user_id === user.id || user.role === 'admin-office') && (
+                          <button
+                            onClick={() => handleDeleteMessage(conv.id)}
+                            className="delete-btn"
+                            title="Delete message"
+                          >
+                            🗑️
+                          </button>
+                        )}
+                      </div>
+                      <div className="message-content">{conv.message}</div>
+                    </div>
+                  ))}
+                </div>
+              ))
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <form onSubmit={handleSendMessage} className="message-form">
+            <div className="input-wrapper">
+              <textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && e.ctrlKey) {
+                    handleSendMessage(e)
+                  }
+                }}
+                placeholder="Type your message here... (Ctrl+Enter to send)"
+                className="message-input"
+                disabled={loading}
+                maxLength={1000}
+              />
+              <div className="input-footer">
+                <span className="char-count">{newMessage.length}/1000</span>
+                <button
+                  type="submit"
+                  className="send-btn"
+                  disabled={loading || !newMessage.trim()}
+                >
+                  {loading ? 'Sending...' : 'Send'}
+                </button>
+              </div>
+            </div>
+          </form>
+        </>
+      )}
     </div>
   )
 }
