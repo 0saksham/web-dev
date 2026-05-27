@@ -66,7 +66,7 @@ export class Notification {
     
     if (filters.is_read !== undefined) {
       query += ` AND n.is_read = $${i++}`
-      params.push(filters.is_read ? 1 : 0)
+      params.push(filters.is_read === true ? true : false)
     }
     
     if (filters.type) {
@@ -90,7 +90,7 @@ export class Notification {
    */
   static async markAsRead(id) {
     const db = getDatabase()
-    await db.query('UPDATE notifications SET is_read = 1 WHERE id = $1', [id])
+    await db.query('UPDATE notifications SET is_read = true WHERE id = $1', [id])
     return this.findById(id)
   }
 
@@ -99,7 +99,7 @@ export class Notification {
    */
   static async markAllAsRead(userId) {
     const db = getDatabase()
-    return db.query('UPDATE notifications SET is_read = 1 WHERE user_id = $1', [userId])
+    return db.query('UPDATE notifications SET is_read = true WHERE user_id = $1', [userId])
   }
 
   /**
@@ -118,7 +118,7 @@ export class Notification {
     const res = await db.query(`
       SELECT COUNT(*) as count 
       FROM notifications 
-      WHERE user_id = $1 AND is_read = 0
+      WHERE user_id = $1 AND is_read = false
     `, [userId])
     return res.rows[0]?.count || 0
   }
