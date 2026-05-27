@@ -341,7 +341,6 @@ const RegisterPage = () => {
                 </button>
               </div>
             </div>
-            </div>
 
             {error && (
               <div className="error-message">
