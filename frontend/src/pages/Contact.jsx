@@ -1,11 +1,14 @@
 ﻿import { useState } from 'react'
 import { useScrollReveal, useParallax } from '../hooks/useAnimations'
 import ParticleBackground from '../components/ParticleBackground'
+import ConversationRoom from '../components/ConversationRoom'
 import './Contact.css'
 
 const Contact = () => {
   useScrollReveal()
   const parallax = useParallax(0.2)
+  const [showConversation, setShowConversation] = useState(false)
+  const [user, setUser] = useState(null)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -15,8 +18,30 @@ const Contact = () => {
   })
   const [status, setStatus] = useState('')
 
+  // Check if user is logged in
+  useState(() => {
+    const token = localStorage.getItem('token')
+    const userData = localStorage.getItem('user')
+    if (token && userData) {
+      try {
+        setUser(JSON.parse(userData))
+      } catch (error) {
+        console.error('Error parsing user data:', error)
+      }
+    }
+  }, [])
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const handleOpenConversation = () => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      alert('Please login to access the community conversation room')
+      return
+    }
+    setShowConversation(true)
   }
 
   const handleSubmit = async (e) => {
@@ -77,7 +102,19 @@ const Contact = () => {
                 </div>
               </div>
             ))}
-          </div>
+            {/* Community Conversation Button */}
+            <button
+              onClick={handleOpenConversation}
+              className="community-button scroll-reveal"
+              style={{ transitionDelay: '0.3s' }}
+              title="Open community conversation room"
+            >
+              <div className="button-icon">💬</div>
+              <div>
+                <h3>Community Room</h3>
+                <p>Join our discussion</p>
+              </div>
+            </button>          </div>
 
           <form className="contact-form glass-card scroll-reveal" onSubmit={handleSubmit}>
             <h3 className="form-title">Send a Message</h3>
@@ -110,6 +147,18 @@ const Contact = () => {
           </form>
         </div>
       </div>
+
+      {/* Conversation Room Modal */}
+      {showConversation && user && (
+        <div className="conversation-modal-overlay">
+          <div className="conversation-modal-container">
+            <ConversationRoom
+              user={user}
+              onClose={() => setShowConversation(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

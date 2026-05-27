@@ -15,6 +15,7 @@ import { Event } from './models/Event.js'
 import { EventMedia } from './models/EventMedia.js'
 import { EventStatus } from './models/EventStatus.js'
 import { Notification } from './models/Notification.js'
+import { Conversation } from './models/Conversation.js'
 import { validateCampusBranch, getFixedCampus } from './utils/campusValidation.js'
 import { upload, getMediaType, getRelativePath } from './utils/fileUpload.js'
 import { canTransitionStatus, canSubmitEvent } from './utils/eventWorkflow.js'
@@ -1311,6 +1312,265 @@ if (process.env.NODE_ENV === 'production') {
     next()
   })
 }
+
+// =================== COMMUNITY CONVERSATIONS ROUTES ===================
+
+/**
+ * Get all conversations (public access, but must be authenticated)
+ */
+app.get('/api/conversations', authenticate, async (req, res) => {
+  try {
+    const limit = req.query.limit ? parseInt(req.query.limit) : 50
+    const offset = req.query.offset ? parseInt(req.query.offset) : 0
+    
+    const conversations = await Conversation.findAll(limit, offset)
+    const totalCount = await Conversation.getTotalCount()
+    
+    res.json({
+      success: true,
+      conversations,
+      total: totalCount,
+      limit,
+      offset
+    })
+  } catch (error) {
+    console.error('Get conversations error:', error)
+    res.status(500).json({
+      error: 'Failed to fetch conversations'
+    })
+  }
+})
+
+/**
+ * Get recent conversations (live chat feed)
+ */
+app.get('/api/conversations/recent', authenticate, async (req, res) => {
+  try {
+    const limit = req.query.limit ? parseInt(req.query.limit) : 100
+    
+    const conversations = await Conversation.findRecent(limit)
+    
+    res.json({
+      success: true,
+      conversations
+    })
+  } catch (error) {
+    console.error('Get recent conversations error:', error)
+    res.status(500).json({
+      error: 'Failed to fetch recent conversations'
+    })
+  }
+})
+
+/**
+ * Create a new conversation message
+ */
+app.post('/api/conversations', authenticate, async (req, res) => {
+  try {
+    const { message } = req.body
+    const user = await User.findById(req.user.id)
+    
+    if (!user) {
+      return res.status(404).json({
+        error: 'User not found'
+      })
+    }
+    
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({
+        error: 'Message is required and must be a string'
+      })
+    }
+    
+    if (message.trim().length === 0) {
+      return res.status(400).json({
+        error: 'Message cannot be empty'
+      })
+    }
+    
+    if (message.length > 1000) {
+      return res.status(400).json({
+        error: 'Message is too long. Maximum 1000 characters allowed.'
+      })
+    }
+    
+    // Map role to designation
+    const designationMap = {
+      'campus-in-charge': 'Campus In-Charge',
+      'spoc': 'SPOC',
+      'admin-office': 'Admin Office'
+    }
+    
+    const conversation = await Conversation.create({
+      user_id: user.id,
+      message: message.trim(),
+      username: user.name,
+      designation: designationMap[user.role] || user.role
+    })
+    
+    res.status(201).json({
+      success: true,
+      message: 'Message posted successfully',
+      conversation
+    })
+  } catch (error) {
+    console.error('Create conversation error:', error)
+    res.status(500).json({
+      error: 'Failed to post message'
+    })
+  }
+})
+
+/**
+ * Get single conversation by ID
+ */
+app.get('/api/conversations/:id', authenticate, async (req, res) => {
+  try {
+    const conversation = await Conversation.findById(req.params.id)
+    
+    if (!conversation) {
+      return res.status(404).json({
+        error: 'Conversation not found'
+      })
+    }
+    
+    res.json({
+      success: true,
+      conversation
+    })
+  } catch (error) {
+    console.error('Get conversation error:', error)
+    res.status(500).json({
+      error: 'Failed to fetch conversation'
+    })
+  }
+})
+
+/**
+ * Update conversation message (only by author)
+ */
+app.put('/api/conversations/:id', authenticate, async (req, res) => {
+  try {
+    const { message } = req.body
+    
+    const conversation = await Conversation.findById(req.params.id)
+    if (!conversation) {
+      return res.status(404).json({
+        error: 'Conversation not found'
+      })
+    }
+    
+    // Only author can edit
+    if (conversation.user_id !== req.user.id) {
+      return res.status(403).json({
+        error: 'Access denied. Only the message author can edit.'
+      })
+    }
+    
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({
+        error: 'Message is required and must be a string'
+      })
+    }
+    
+    if (message.trim().length === 0) {
+      return res.status(400).json({
+        error: 'Message cannot be empty'
+      })
+    }
+    
+    if (message.length > 1000) {
+      return res.status(400).json({
+        error: 'Message is too long. Maximum 1000 characters allowed.'
+      })
+    }
+    
+    const updatedConversation = await Conversation.update(req.params.id, {
+      message: message.trim()
+    })
+    
+    res.json({
+      success: true,
+      message: 'Message updated successfully',
+      conversation: updatedConversation
+    })
+  } catch (error) {
+    console.error('Update conversation error:', error)
+    res.status(500).json({
+      error: 'Failed to update message'
+    })
+  }
+})
+
+/**
+ * Delete conversation (only by author or admin)
+ */
+app.delete('/api/conversations/:id', authenticate, async (req, res) => {
+  try {
+    const conversation = await Conversation.findById(req.params.id)
+    
+    if (!conversation) {
+      return res.status(404).json({
+        error: 'Conversation not found'
+      })
+    }
+    
+    const user = await User.findById(req.user.id)
+    
+    // Only author or admin can delete
+    if (conversation.user_id !== req.user.id && user.role !== 'admin-office') {
+      return res.status(403).json({
+        error: 'Access denied'
+      })
+    }
+    
+    await Conversation.delete(req.params.id)
+    
+    res.json({
+      success: true,
+      message: 'Message deleted successfully'
+    })
+  } catch (error) {
+    console.error('Delete conversation error:', error)
+    res.status(500).json({
+      error: 'Failed to delete message'
+    })
+  }
+})
+
+/**
+ * Search conversations
+ */
+app.get('/api/conversations/search', authenticate, async (req, res) => {
+  try {
+    const { q } = req.query
+    
+    if (!q || typeof q !== 'string') {
+      return res.status(400).json({
+        error: 'Search query (q) is required'
+      })
+    }
+    
+    if (q.trim().length < 2) {
+      return res.status(400).json({
+        error: 'Search query must be at least 2 characters'
+      })
+    }
+    
+    const conversations = await Conversation.search(q.trim())
+    
+    res.json({
+      success: true,
+      conversations,
+      query: q
+    })
+  } catch (error) {
+    console.error('Search conversations error:', error)
+    res.status(500).json({
+      error: 'Failed to search conversations'
+    })
+  }
+})
 
 app.listen(PORT, HOST, () => {
   console.log(`ðŸš€ Server is running on http://${HOST}:${PORT}`)
