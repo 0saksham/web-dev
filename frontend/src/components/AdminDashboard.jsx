@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { apiRequest } from '../utils/api';
 import { campusLabels, branchLabels } from '../utils/campusValidation';
 import ErrorBoundary from './ErrorBoundary';
@@ -442,7 +442,7 @@ const EventDetailView = ({ event, onBack, onUpdate }) => {
     return (
       <div className="event-detail-view">
         <button className="btn btn-secondary back-btn" onClick={onBack}>
-          ← Back to Events
+          â† Back to Events
         </button>
         <div className="loading-state">
           <p>Loading event details...</p>
@@ -515,7 +515,7 @@ const EventDetailView = ({ event, onBack, onUpdate }) => {
       
       // Create a temporary link and use it to download
       const downloadUrl = `/api/media/${mediaId}/download`
-      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}${downloadUrl}`, {
+      const response = await fetch(`https://iks-backend-sq2b.onrender.com/api${downloadUrl}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -547,7 +547,7 @@ const EventDetailView = ({ event, onBack, onUpdate }) => {
   return (
     <div className="event-detail-view">
       <button className="btn btn-secondary back-btn" onClick={onBack}>
-        ← Back to Events
+        â† Back to Events
       </button>
 
       <div className="event-detail-header">
@@ -725,3 +725,4 @@ const EventDetailView = ({ event, onBack, onUpdate }) => {
 };
 
 export default AdminDashboard;
+
