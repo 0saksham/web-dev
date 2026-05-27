@@ -138,3 +138,5 @@ export const closeDatabase = async () => {
     pool = null
   }
 }
+
+export default { getDatabase, initDatabase, closeDatabase }

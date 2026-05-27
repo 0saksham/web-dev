@@ -1,10 +1,11 @@
 import { v4 as uuidv4 } from 'uuid'
-import db from '../database/db.js'
+import { getDatabase } from '../database/db.js'
 
 export class Conversation {
   // Create a new conversation message
   static async create(conversationData) {
     try {
+      const db = getDatabase()
       const id = uuidv4()
       const { user_id, message, username, designation } = conversationData
 
@@ -25,6 +26,7 @@ export class Conversation {
   // Get all conversations (paginated)
   static async findAll(limit = 50, offset = 0) {
     try {
+      const db = getDatabase()
       const result = await db.query(
         `SELECT id, user_id, message, username, designation, created_at, updated_at
          FROM conversations
@@ -43,6 +45,7 @@ export class Conversation {
   // Get conversations by user
   static async findByUserId(userId) {
     try {
+      const db = getDatabase()
       const result = await db.query(
         `SELECT id, user_id, message, username, designation, created_at, updated_at
          FROM conversations
@@ -61,6 +64,7 @@ export class Conversation {
   // Get single conversation by ID
   static async findById(id) {
     try {
+      const db = getDatabase()
       const result = await db.query(
         `SELECT id, user_id, message, username, designation, created_at, updated_at
          FROM conversations
@@ -78,6 +82,7 @@ export class Conversation {
   // Get recent conversations (for real-time updates)
   static async findRecent(limit = 100) {
     try {
+      const db = getDatabase()
       const result = await db.query(
         `SELECT id, user_id, message, username, designation, created_at, updated_at
          FROM conversations
@@ -96,6 +101,7 @@ export class Conversation {
   // Update conversation message
   static async update(id, updates) {
     try {
+      const db = getDatabase()
       const allowedFields = ['message']
       const updateFields = []
       const updateValues = []
@@ -134,6 +140,7 @@ export class Conversation {
   // Delete conversation
   static async delete(id) {
     try {
+      const db = getDatabase()
       const result = await db.query(
         `DELETE FROM conversations WHERE id = $1 RETURNING id`,
         [id]
@@ -149,6 +156,7 @@ export class Conversation {
   // Get total conversation count
   static async getTotalCount() {
     try {
+      const db = getDatabase()
       const result = await db.query(
         `SELECT COUNT(*) as count FROM conversations`
       )
@@ -163,6 +171,7 @@ export class Conversation {
   // Search conversations
   static async search(query) {
     try {
+      const db = getDatabase()
       const result = await db.query(
         `SELECT id, user_id, message, username, designation, created_at, updated_at
          FROM conversations
