@@ -1,4 +1,4 @@
-import express from 'express'
+﻿import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import helmet from 'helmet'
@@ -227,7 +227,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // Find user
-    const user = User.findByEmail(email)
+    const user = await User.findByEmail(email)
     if (!user) {
       return res.status(401).json({
         error: 'Invalid email or password'
@@ -466,7 +466,7 @@ app.post('/api/events', authenticate, (req, res) => {
 })
 
 /**
- * Submit event for approval (Draft → Pending)
+ * Submit event for approval (Draft â†’ Pending)
  */
 app.post('/api/events/:id/submit', authenticate, (req, res) => {
   try {
@@ -1313,12 +1313,13 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 app.listen(PORT, HOST, () => {
-  console.log(`🚀 Server is running on http://${HOST}:${PORT}`)
-  console.log(`📡 API Health Check: http://${HOST}:${PORT}/api/health`)
+  console.log(`ðŸš€ Server is running on http://${HOST}:${PORT}`)
+  console.log(`ðŸ“¡ API Health Check: http://${HOST}:${PORT}/api/health`)
   
   if (process.env.NODE_ENV === 'production') {
-    console.log('🔒 Production mode: Security headers enabled')
-    console.log('📁 Static files served from frontend/dist')
+    console.log('ðŸ”’ Production mode: Security headers enabled')
+    console.log('ðŸ“ Static files served from frontend/dist')
   }
 })
+
 
