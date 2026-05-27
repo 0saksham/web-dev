@@ -189,9 +189,17 @@ const EventReporting = ({ user }) => {
               <div key={event.id} className="event-card">
                 <div className="event-header">
                   <h3 className="event-title">{event.title}</h3>
-                  <span className="status-badge status-approved">
-                    Approved
-                  </span>
+                  <div className="status-section">
+                    <span className="status-badge status-approved">
+                      Approved
+                    </span>
+                    {event.remarks && (
+                      <div className="review-comment-box">
+                        <strong>Review Comment:</strong>
+                        <p>{event.remarks}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="event-details">

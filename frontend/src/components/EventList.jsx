@@ -159,9 +159,17 @@ const EventList = ({ events, loading, user, onEdit, onDelete, onRefresh }) => {
           <div className="event-card-header">
             <div className="event-title-section">
               <h3>{event.title}</h3>
-              <span className={`status-badge ${getStatusBadgeClass(event.status)}`}>
-                {getStatusLabel(event.status)}
-              </span>
+              <div className="status-section">
+                <span className={`status-badge ${getStatusBadgeClass(event.status)}`}>
+                  {getStatusLabel(event.status)}
+                </span>
+                {(event.status === 'rejected' || event.status === 'approved') && event.remarks && (
+                  <div className="review-comment-box">
+                    <strong>Review Comment:</strong>
+                    <p>{event.remarks}</p>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="event-actions">
               {event.status === 'draft' && event.created_by === user?.id && (

@@ -129,6 +129,13 @@
   margin-right: 10px;
 }
 
+.status-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
 .status-badge {
   padding: 4px 8px;
   border-radius: 12px;
@@ -136,11 +143,36 @@
   font-weight: 600;
   text-transform: uppercase;
   align-self: flex-start;
+  white-space: nowrap;
 }
 
 .status-approved {
   background: #27ae60;
   color: white;
+}
+
+.review-comment-box {
+  background: #f8f9fa;
+  border-left: 3px solid #27ae60;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  max-width: 100%;
+}
+
+.review-comment-box strong {
+  display: block;
+  color: #2c3e50;
+  margin-bottom: 5px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.review-comment-box p {
+  margin: 0;
+  color: #555;
+  line-height: 1.5;
+  word-wrap: break-word;
 }
 
 .event-description {

@@ -337,9 +337,17 @@ const AdminDashboard = ({ onEventUpdate }) => {
               >
                 <div className="event-header">
                   <h3 className="event-title">{event.title}</h3>
-                  <span className={`status-badge ${getStatusBadgeClass(event.status)}`}>
-                    {formatStatus(event.status)}
-                  </span>
+                  <div className="status-section">
+                    <span className={`status-badge ${getStatusBadgeClass(event.status)}`}>
+                      {formatStatus(event.status)}
+                    </span>
+                    {(event.status === 'rejected' || event.status === 'approved') && event.remarks && (
+                      <div className="review-comment-box">
+                        <strong>Review Comment:</strong>
+                        <p>{event.remarks}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="event-details">
