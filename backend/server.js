@@ -1342,7 +1342,7 @@ app.get('/api/conversations', authenticate, async (req, res) => {
 })
 
 /**
- * Get recent conversations (live chat feed)
+ * Get recent conversations (live chat feed) - MUST BE BEFORE /:id ROUTE
  */
 app.get('/api/conversations/recent', authenticate, async (req, res) => {
   try {
@@ -1358,6 +1358,39 @@ app.get('/api/conversations/recent', authenticate, async (req, res) => {
     console.error('Get recent conversations error:', error)
     res.status(500).json({
       error: 'Failed to fetch recent conversations'
+    })
+  }
+})
+
+/**
+ * Search conversations - MUST BE BEFORE /:id ROUTE
+ */
+app.get('/api/conversations/search', authenticate, async (req, res) => {
+  try {
+    const { q } = req.query
+    
+    if (!q || typeof q !== 'string') {
+      return res.status(400).json({
+        error: 'Search query (q) is required'
+      })
+    }
+    
+    if (q.trim().length < 2) {
+      return res.status(400).json({
+        error: 'Search query must be at least 2 characters'
+      })
+    }
+    
+    const conversations = await Conversation.search(q.trim())
+    
+    res.json({
+      success: true,
+      conversations
+    })
+  } catch (error) {
+    console.error('Search conversations error:', error)
+    res.status(500).json({
+      error: 'Failed to search conversations'
     })
   }
 })
@@ -1538,40 +1571,7 @@ app.delete('/api/conversations/:id', authenticate, async (req, res) => {
   }
 })
 
-/**
- * Search conversations
- */
-app.get('/api/conversations/search', authenticate, async (req, res) => {
-  try {
-    const { q } = req.query
-    
-    if (!q || typeof q !== 'string') {
-      return res.status(400).json({
-        error: 'Search query (q) is required'
-      })
-    }
-    
-    if (q.trim().length < 2) {
-      return res.status(400).json({
-        error: 'Search query must be at least 2 characters'
-      })
-    }
-    
-    const conversations = await Conversation.search(q.trim())
-    
-    res.json({
-      success: true,
-      conversations,
-      query: q
-    })
-  } catch (error) {
-    console.error('Search conversations error:', error)
-    res.status(500).json({
-      error: 'Failed to search conversations'
-    })
-  }
-})
-
+// Start server
 app.listen(PORT, HOST, () => {
   console.log(`ðŸš€ Server is running on http://${HOST}:${PORT}`)
   console.log(`ðŸ“¡ API Health Check: http://${HOST}:${PORT}/api/health`)
